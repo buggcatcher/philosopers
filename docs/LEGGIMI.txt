@@ -1,0 +1,77 @@
+
+SUPER MEGA PIANO DIABOLICO PER EVITARE DEADLOCK, DATA-RACE E STARVATION.   
+
+Pari:
+    time_to_die = time_to_eat + time_to_sleep + 10
+Dispari:
+    time_to_die = time_to_eat * 2 + time_to_sleep + 10
+1. tempo sonno dispari(time_to_eat / 2)
+2. dispari partono dal mutex destro mentre i pari con il sinistro 
+3. tuttu i filosofi partono dal mutex destro eccetto l'ultimo
+
+Inizializzazione
+    Controlla e valida gli input (numero di filosofi, tempi, pasti). ✅
+    Alloca la memoria per filosofi e mutex. ✅
+    Inizializza i mutex delle forchette e altre strutture. ✅
+    Crea un array di pthread_t per gestire i filosofi come thread separati. ✅ 
+Creazione dei Thread
+    Ogni filosofo viene eseguito come un thread separato.
+    Ogni thread cicla: pensare → prendere forchette → mangiare → rilasciare forchette → dormire.
+Gestione del Tempo
+    Usa gettimeofday o un'altra funzione per ottenere il tempo corrente.
+    Calcola i tempi di attesa per le azioni (mangiare, dormire).
+    Tieni traccia del tempo trascorso dall'ultimo pasto per prevenire la morte dei filosofi.
+Gestione delle Azioni del Filosofo
+    Pensare
+        Non richiede l'uso delle forchette.
+        Simula un tempo di pensiero prima di tentare di mangiare.
+    Mangiare
+        Blocca entrambe le forchette (mutex).
+        Aggiorna il tempo dell'ultimo pasto e il contatore dei pasti.
+        Simula il tempo di mangiare.
+        Sblocca le forchette.
+    Dormire
+        Dopo aver mangiato, simula un periodo di sonno.
+Sincronizzazione e Controllo della Morte
+    Condivisione dei mutex tra thread (forchette tra philosofi)
+    Usa un mutex globale per controllare se un filosofo è morto.
+    Periodicamente, ogni filosofo verifica se ha superato il limite di tempo senza mangiare.
+    Se un filosofo muore, fermare il ciclo per tutti i filosofi e stampare lo stato.
+Prevenzione del Deadlock
+    Limita il numero di filosofi che possono mangiare contemporaneamente.
+    Usa un mutex centrale per gestire l'accesso alle forchette in modo controllato.
+        init, destroy, lock, unlock
+Terminazione dei Thread
+    Dopo che uno dei filosofi muore o tutti sono sazi, i thread devono terminare.
+    Usa pthread_join per aspettare che ogni thread finisca.
+    Assicurati di liberare tutte le risorse (mutex, memoria allocata).
+Gestione degli Errori
+    Gestisci gli errori durante l'allocazione della memoria, la creazione dei thread, e la sincronizzazione.
+    Stampa messaggi di errore utili e termina il programma in modo pulito.
+    valgrind --tool=helgrind ./philo
+
+Routine nel dettaglio:
+    Prima di mangiare (prendere le forchette)
+        Quando un filosofo prende una forchetta (prima una, poi l'altra), devi stampare: timestamp_in_ms X has taken a fork
+        Questo messaggio va stampato due volte, una per ogni forchetta presa.
+    Inizio del pasto
+        Quando un filosofo inizia a mangiare (entrambe le forchette sono state prese), devi stampare: timestamp_in_ms X is eating
+        Qui è anche il momento di registrare l'orario dell'ultimo pasto per poter calcolare il tempo di inattività.
+    Fine del pasto (rilascio delle forchette)
+        Dopo aver mangiato e rilasciato entrambe le forchette, non serve stampare un messaggio per il rilascio.
+        Puoi direttamente passare allo stato successivo.
+    Inizio del sonno
+        Quando il filosofo passa dallo stato di mangiare a dormire, devi stampare: timestamp_in_ms X is sleeping
+    Inizio del pensiero
+        Dopo aver terminato il sonno, quando il filosofo inizia a pensare, devi stampare: timestamp_in_ms X is thinking
+    Quando un filosofo muore
+        Se durante il controllo periodico (all'inizio di ogni iterazione o dopo una fase della routine)
+        il tempo trascorso dall'ultimo pasto supera time_to_die, devi stampare immediatamente: timestamp_in_ms X died
+        La stampa deve avvenire entro 10 ms dalla morte effettiva del filosofo, quindi è importante che questo controllo sia frequente e ben sincronizzato.
+
+ sv     
+    fine simula 
+    starv 
+    check pasti
+
+    fin ora non e' mai morto nessuno, verifica!
